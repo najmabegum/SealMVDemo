@@ -166,8 +166,8 @@ Ciphertext Linear_Transform_Plain(Ciphertext ct, vector<Plaintext> U_diagonals, 
 
     // Fill ct with duplicate
     Ciphertext ct_rot;
-    //evaluator.rotate_vector(ct, -U_diagonals.size(), gal_keys, ct_rot);
-    evaluator.rotate_vector(ct, U_diagonals.size(), gal_keys, ct_rot);
+    evaluator.rotate_vector(ct, -U_diagonals.size(), gal_keys, ct_rot);
+    
     // cout << "U_diagonals.size() = " << U_diagonals.size() << endl;
     Ciphertext ct_new;
     evaluator.add(ct, ct_rot, ct_new);
@@ -194,8 +194,8 @@ Ciphertext Linear_Transform_Cipher(Ciphertext ct, vector<Ciphertext> U_diagonals
 
     // Fill ct with duplicate
     Ciphertext ct_rot;
-    //evaluator.rotate_vector(ct, -U_diagonals.size(), gal_keys, ct_rot);
-    evaluator.rotate_vector(ct, U_diagonals.size(), gal_keys, ct_rot);
+    evaluator.rotate_vector(ct, -U_diagonals.size(), gal_keys, ct_rot);
+    
     // cout << "U_diagonals.size() = " << U_diagonals.size() << endl;
     Ciphertext ct_new;
     evaluator.add(ct, ct_rot, ct_new);
