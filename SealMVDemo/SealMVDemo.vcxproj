@@ -155,13 +155,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MatrixMult.cpp" />
-    <ClCompile Include="MVMultiplication.cpp" />
+    <ClCompile Include="Common.cpp" />
     <ClCompile Include="MVMultiplicationDense.cpp" />
     <ClCompile Include="MVMultiplicationSparse.cpp" />
-    <ClCompile Include="TimeStudy.cpp" />
+    <ClCompile Include="Sequential.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
