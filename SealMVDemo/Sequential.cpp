@@ -161,6 +161,7 @@ void Sequential(int dimension, bool rescale)
     outf << "# C_Vec . C_Mat" << endl;    
 
     /*Perform sequentially cipher matrix and cipher vector multiplication*/
+    auto start_comp2_set2 = chrono::high_resolution_clock::now();
     for (int x = 0; x < dimension; x++)
     {
         if (x == 0)
@@ -191,6 +192,11 @@ void Sequential(int dimension, bool rescale)
         vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);
         get_max_error_norm(output_result2_set2, expectedvector2, dimension);
     }   
+    auto stop_comp2_set2 = chrono::high_resolution_clock::now();
+
+    auto duration_comp2_set2 = chrono::duration_cast<chrono::microseconds>(stop_comp2_set2 - start_comp2_set2);
+    cout << "\nTime to compute : " << duration_comp2_set2.count() << " microseconds" << endl;
+    outf << "100\t\t" << duration_comp2_set2.count() << endl;
 
     outf.close();
 }
