@@ -216,21 +216,19 @@ inline Ciphertext Linear_Transform_Cipher(Ciphertext ct, vector<Ciphertext> U_di
     cout << "    + Scale add: " << log2(ct_new.scale()) << " bits" << endl;
 
     vector<Ciphertext> ct_result(U_diagonals.size());
-    evaluator.multiply(ct_new, U_diagonals[0], ct_result[0]);
-
-
+    evaluator.multiply(ct_new, U_diagonals[0], ct_result[0]);       
     for (int l = 1; l < U_diagonals.size(); l++)
     {
         Ciphertext temp_rot;
         evaluator.rotate_vector(ct_new, l, gal_keys, temp_rot);
-        evaluator.multiply(temp_rot, U_diagonals[l], ct_result[l]);
-    }
-
+        evaluator.multiply(temp_rot, U_diagonals[l], ct_result[l]);              
+    } 
+    
     Ciphertext ct_prime;
     evaluator.add_many(ct_result, ct_prime);
     if (rescale)
     {
-        cout << "    + Scale Linear_Transform_Cipher addmany: " << log2(ct_prime.scale()) << " bits" << endl;
+        cout << "    + Scale Linear_Transform_Cipher addmany: " << log2(ct_prime.scale()) << " bits" << endl;        
         evaluator.rescale_to_next_inplace(ct_prime);
         cout << "    + after rescale Linear_Transform_Cipher addmany: " << log2(ct_prime.scale()) << " bits" << endl;
     }    
@@ -273,9 +271,23 @@ inline vector<double> get_Linear_Transformation_expected_vector(int dimension, v
 }
 
 inline void print_error_difference(vector<double> actualResult, vector<double> expectedResult, int dimention)
-{
+{    
     for (unsigned int i = 0; i < dimention; i++)
     {
         cout << "index " << i << ": " << expectedResult[i] - actualResult[i] << "\n";
     }
+}
+
+inline void get_max_error_norm(vector<double> actualResult, vector<double> expectedResult, int dimension)
+{    
+    vector<double> error(dimension);
+    for (unsigned int i = 0; i < dimension; i++)
+    {
+        double difference = expectedResult[i] - actualResult[i];
+        error[i] = abs(difference);        
+    }
+
+    // Find the maximum element in error vector
+    cout << "\nMax Error Norm = " << *max_element(error.begin(), error.end()) << "\n";    
+    
 }

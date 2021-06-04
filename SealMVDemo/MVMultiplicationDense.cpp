@@ -25,7 +25,7 @@ void MVMultiplicationDense(int dimension, bool rescale)
 	PublicKey pk;
 	keygen.create_public_key(pk);
 	GaloisKeys gal_keys;
-	keygen.create_galois_keys(gal_keys);
+	keygen.create_galois_keys(gal_keys);	
 
 	Encryptor encryptor(context, pk);
 	Evaluator evaluator(context);
@@ -325,8 +325,7 @@ void MVMultiplicationDense(int dimension, bool rescale)
 	test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
 
 	vector<double> expectedvector1 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-
-	print_error_difference(output_result_set2, expectedvector1, dimension);
+	get_max_error_norm(output_result_set2, expectedvector1, dimension);
 
 	// ------------- SECOND COMPUTATION ----------------
 	outf << "# index 1" << endl;
@@ -359,7 +358,7 @@ void MVMultiplicationDense(int dimension, bool rescale)
 
 	test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
 	vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-	print_error_difference(output_result2_set2, expectedvector2, dimension);
-
+	get_max_error_norm(output_result2_set2, expectedvector2, dimension);
+	
 	outf.close();
 }

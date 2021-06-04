@@ -377,7 +377,7 @@ void MVMultiplicationSparse(int dimension, int diagonalStart, int diagonalEnd, b
 
     test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
     vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-    print_error_difference(output_result2_set2, expectedvector2, dimension);
+    get_max_error_norm(output_result2_set2, expectedvector2, dimension);
 
     outf.close();
 }

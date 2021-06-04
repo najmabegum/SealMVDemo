@@ -188,11 +188,8 @@ void Sequential(int dimension, bool rescale)
         // Check result
         cout << "Expected output Set 2: " << endl;        
         test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);      
-        if (x == 0 || x==dimension-1)
-        {
-            vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);
-            print_error_difference(output_result2_set2, expectedvector2, dimension);
-        }
+        vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);
+        get_max_error_norm(output_result2_set2, expectedvector2, dimension);
     }   
 
     outf.close();
