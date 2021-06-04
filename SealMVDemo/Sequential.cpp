@@ -86,9 +86,9 @@ void Sequential(int dimension, bool rescale)
 
     outscript << "\nplot 'linear_transf_" << to_string(poly_modulus_degree) << ".dat' index 0 title \"C_Vec * P_Mat\" with linespoints ls 1, \\\n"
         << "'' index 1 title \"C_Vec * C_Mat\"  with linespoints ls 2";
+    
     // Close script
     outscript.close();
-
     // --------------- MATRIX SET ------------------    
     cout << "Dimension Set 2: " << dimension << endl
         << endl;
@@ -161,6 +161,7 @@ void Sequential(int dimension, bool rescale)
     outf << "# C_Vec . C_Mat" << endl;    
 
     /*Perform sequentially cipher matrix and cipher vector multiplication*/
+    int lastIndex = dimension - 1;
     auto start_comp2_set2 = chrono::high_resolution_clock::now();
     for (int x = 0; x < dimension; x++)
     {
@@ -175,28 +176,25 @@ void Sequential(int dimension, bool rescale)
             cipher_matrix1_lt_Seq[x] = Linear_Transform_Cipher(cipher_matrix1_lt_Seq[x-1], cipher_diagonal1_set2, gal_keys, params, rescale);
         }        
 
-        // Decrypt
-        Plaintext pt_result2_set2;
-        decryptor.decrypt(cipher_matrix1_lt_Seq[x], pt_result2_set2);
+        if (x == lastIndex)
+        {
+            // Decrypt
+            Plaintext pt_result2_set2;
+            decryptor.decrypt(cipher_matrix1_lt_Seq[x], pt_result2_set2);
 
-        // Decode
-        vector<double> output_result2_set2;
-        ckks_encoder.decode(pt_result2_set2, output_result2_set2);
-        
-        cout << "Linear Transformation Set 2 Result:" << endl;
-        print_partial_vector(output_result2_set2, dimension);
+            // Decode
+            vector<double> output_result2_set2;
+            ckks_encoder.decode(pt_result2_set2, output_result2_set2);
 
-        // Check result
-        cout << "Expected output Set 2: " << endl;        
-        test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);      
-        vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);
-        get_max_error_norm(output_result2_set2, expectedvector2, dimension);
+            vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);
+            get_max_error_norm(output_result2_set2, expectedvector2, dimension);
+       }
     }   
     auto stop_comp2_set2 = chrono::high_resolution_clock::now();
 
     auto duration_comp2_set2 = chrono::duration_cast<chrono::microseconds>(stop_comp2_set2 - start_comp2_set2);
     cout << "\nTime to compute : " << duration_comp2_set2.count() << " microseconds" << endl;
     outf << "100\t\t" << duration_comp2_set2.count() << endl;
-
+   
     outf.close();
 }
