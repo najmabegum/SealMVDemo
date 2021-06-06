@@ -226,7 +226,7 @@ inline Ciphertext Linear_Transform_Cipher(Ciphertext ct, vector<Ciphertext> U_di
     
     Ciphertext ct_prime;
     evaluator.add_many(ct_result, ct_prime);
-    if (rescale)
+    if (rescale && log2(ct_prime.scale()) > 40)
     {
         cout << "    + Scale Linear_Transform_Cipher addmany: " << log2(ct_prime.scale()) << " bits" << endl;        
         evaluator.rescale_to_next_inplace(ct_prime);
@@ -268,6 +268,28 @@ inline vector<double> get_Linear_Transformation_expected_vector(int dimension, v
     }
 
     return result;
+}
+
+//return result
+inline vector<double> get_Linear_Transformation_expected_sequentialVector(int dimension, vector<vector<double>> input_matrix)
+{
+    vector<double> result(dimension);
+    vector<double> startInput = input_matrix[0];
+    vector<vector<double>> outputvector(dimension);
+    int k = 0;
+    for (int i = 0; i < dimension; i++)
+    {
+        if (i == 0)
+        {
+            outputvector[i] = get_Linear_Transformation_expected_vector(dimension, input_matrix, startInput);
+        }
+        else
+        {
+            outputvector[i] = get_Linear_Transformation_expected_vector(dimension, input_matrix, outputvector[i-1]);
+        }               
+    }
+    int size = outputvector.size();
+    return outputvector[size-1];
 }
 
 inline void print_error_difference(vector<double> actualResult, vector<double> expectedResult, int dimention)

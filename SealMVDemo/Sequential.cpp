@@ -11,11 +11,13 @@ using namespace seal;
 void Sequential(int dimension, bool rescale)
 {
     /*Set Seal context*/
-    size_t poly_modulus_degree = 8192;
+    /*size_t poly_modulus_degree = 8192;*/
+    size_t poly_modulus_degree = 16384;
     EncryptionParameters params(scheme_type::ckks);
     params.set_poly_modulus_degree(poly_modulus_degree);
     cout << "MAX BIT COUNT: " << CoeffModulus::MaxBitCount(poly_modulus_degree) << endl;
-    params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));    
+    /*params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 60 }));    */
+    params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 40, 40, 40, 40, 40, 60 }));
     auto context = SEALContext::SEALContext(params);
 
     KeyGenerator keygen(context);
@@ -24,6 +26,9 @@ void Sequential(int dimension, bool rescale)
     keygen.create_public_key(pk);
     GaloisKeys gal_keys;
     keygen.create_galois_keys(gal_keys);
+    
+    RelinKeys relin_keys;
+    keygen.create_relin_keys(relin_keys);
 
     Encryptor encryptor(context, pk);
     Evaluator evaluator(context);
@@ -34,7 +39,8 @@ void Sequential(int dimension, bool rescale)
 
     // Create scale
     cout << "Coeff Modulus Back Value: " << params.coeff_modulus().back().value() << endl;
-    double scale = pow(2.0, 40);
+    /*double scale = pow(2.0, 40);*/
+    double scale = pow(2.0, 80);
 
     // Set output file
     string filename = "linear_transf_" + to_string(poly_modulus_degree) + ".dat";
@@ -151,6 +157,8 @@ void Sequential(int dimension, bool rescale)
 
     for (unsigned int i = 0; i < dimension; i++)
     {      
+        encryptor.encrypt(plain_matrix1_set2[i], cipher_matrix1_set2[i]);
+        encryptor.encrypt(plain_matrix2_set2[i], cipher_matrix2_set2[i]);
         encryptor.encrypt(plain_diagonal1_set2[i], cipher_diagonal1_set2[i]);
         encryptor.encrypt(plain_diagonal2_set2[i], cipher_diagonal2_set2[i]);
     }
@@ -162,6 +170,7 @@ void Sequential(int dimension, bool rescale)
 
     /*Perform sequentially cipher matrix and cipher vector multiplication*/
     int lastIndex = dimension - 1;
+   
     auto start_comp2_set2 = chrono::high_resolution_clock::now();
     for (int x = 0; x < dimension; x++)
     {
@@ -172,23 +181,31 @@ void Sequential(int dimension, bool rescale)
         }
         else
         {
-            encryptor.encrypt(plain_matrix1_set2[x], cipher_matrix1_lt_Seq[x-1]);
-            cipher_matrix1_lt_Seq[x] = Linear_Transform_Cipher(cipher_matrix1_lt_Seq[x-1], cipher_diagonal1_set2, gal_keys, params, rescale);
-        }        
-
-        if (x == lastIndex)
-        {
-            // Decrypt
-            Plaintext pt_result2_set2;
-            decryptor.decrypt(cipher_matrix1_lt_Seq[x], pt_result2_set2);
+            /*Decrypt*/            
+            Plaintext pt_result_current;
+            decryptor.decrypt(cipher_matrix1_lt_Seq[x-1], pt_result_current);
 
             // Decode
-            vector<double> output_result2_set2;
-            ckks_encoder.decode(pt_result2_set2, output_result2_set2);
+            vector<double> output_result_plain;
+            ckks_encoder.decode(pt_result_current, output_result_plain);
 
-            vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[x]);
-            get_max_error_norm(output_result2_set2, expectedvector2, dimension);
-       }
+            /*Comment two lines below for performance study*/
+            cout << "Linear Transformation Set 2 Result:" << endl;
+            print_partial_vector(output_result_plain, dimension);
+
+            Ciphertext encodedCipherResult;
+            Plaintext encodedPlainResult;
+            ckks_encoder.encode(output_result_plain, scale, encodedPlainResult);
+            encryptor.encrypt(encodedPlainResult, encodedCipherResult);
+            if (cipher_diagonal1_set2[0].coeff_modulus_size() > encodedCipherResult.coeff_modulus_size())
+            {
+                for (unsigned int i = 0; i < dimension; i++)
+                {                    
+                    evaluator.rescale_to_next_inplace(cipher_diagonal1_set2[i]);
+                }
+            }
+            cipher_matrix1_lt_Seq[x] = Linear_Transform_Cipher(encodedCipherResult, cipher_diagonal1_set2, gal_keys, params, rescale);
+        }              
     }   
     auto stop_comp2_set2 = chrono::high_resolution_clock::now();
 
@@ -196,5 +213,21 @@ void Sequential(int dimension, bool rescale)
     cout << "\nTime to compute : " << duration_comp2_set2.count() << " microseconds" << endl;
     outf << "100\t\t" << duration_comp2_set2.count() << endl;
    
+     /*Decrypt*/
+     int sizeArr = cipher_matrix1_lt_Seq.size();
+     Plaintext pt_result2_set2;
+     decryptor.decrypt(cipher_matrix1_lt_Seq[sizeArr-1], pt_result2_set2);
+
+     // Decode
+     vector<double> output_result2_set2;
+     ckks_encoder.decode(pt_result2_set2, output_result2_set2);
+
+     cout << "Linear Transformation Set 2 Result:" << endl;
+     print_partial_vector(output_result2_set2, dimension);
+
+     vector<double> expectedvector2 = get_Linear_Transformation_expected_sequentialVector(dimension, pod_matrix1_set2);
+     print_partial_vector(expectedvector2, dimension);
+     get_max_error_norm(output_result2_set2, expectedvector2, dimension);
+
     outf.close();
 }
