@@ -26,19 +26,19 @@ int main()
         cout << "+----------------------------+----------------------------+" << endl;
        
         size_t megabytes = MemoryManager::GetPool().alloc_byte_count() >> 20;
-        cout << "[" << setw(6) << right << megabytes << " MB] "
+        cout << "[" << setw(8) << right << megabytes << " MB] "
             << "Total allocation from the memory pool" << endl;
 
         int selection = 0;
         bool valid = true;
         do
         {
-            cout << endl << "> Run example (1 ~ 6) or exit (0): ";
+            cout << endl << "> Run example (1 ~ 8) or exit (0): ";
             if (!(cin >> selection))
             {
                 valid = false;
             }
-            else if (selection < 0 || selection > 6)
+            else if (selection < 0 || selection > 8)
             {
                 valid = false;
             }
@@ -48,7 +48,7 @@ int main()
             }
             if (!valid)
             {
-                cout << "  [Beep~~] valid option: type 0 ~ 6" << endl;
+                cout << "  [Beep~~] valid option: type 0 ~ 8" << endl;
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
