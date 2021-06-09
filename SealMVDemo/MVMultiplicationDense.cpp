@@ -325,7 +325,8 @@ void MVMultiplicationDense(int dimension, bool rescale)
 	test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
 
 	vector<double> expectedvector1 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-	get_max_error_norm(output_result_set2, expectedvector1, dimension);
+	vector<double> errornorm1result(dimension);	
+	get_max_error_norm(output_result_set2, expectedvector1, dimension, errornorm1result);
 
 	// ------------- SECOND COMPUTATION ----------------
 	outf << "# index 1" << endl;
@@ -358,7 +359,8 @@ void MVMultiplicationDense(int dimension, bool rescale)
 
 	test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
 	vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-	get_max_error_norm(output_result2_set2, expectedvector2, dimension);
+	vector<double> errornorm2result(dimension);
+	get_max_error_norm(output_result2_set2, expectedvector2, dimension, errornorm2result);
 	
 	outf.close();
 }
