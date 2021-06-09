@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <stdlib.h>
 #include <vector>
 #include "seal/seal.h"
 using namespace std;
@@ -22,6 +23,7 @@ using namespace seal;
 void MVMultiplicationSparse(int dimension, int diagonalStart, int diagonalEnd, bool rescale);
 void Sequential(int dimension,bool rescale);
 void MVMultiplicationDense(int dimension, bool rescale);
+void MVDenseMatrix(int dimension, bool rescale);
 
 // Helper function that prints a matrix (vector of vectors)
 template <typename T>
@@ -300,16 +302,14 @@ inline void print_error_difference(vector<double> actualResult, vector<double> e
     }
 }
 
-inline void get_max_error_norm(vector<double> actualResult, vector<double> expectedResult, int dimension)
-{    
-    vector<double> error(dimension);
-    for (unsigned int i = 0; i < dimension; i++)
-    {
-        double difference = expectedResult[i] - actualResult[i];
-        error[i] = abs(difference);        
+inline void get_max_error_norm(vector<double> actualResult, vector<double> expectedResult, int dimension, vector<double> errordResult)
+{        
+    for (int i = 0; i < dimension; i++)
+    {         
+        errordResult[i] = abs(expectedResult[i] - actualResult[i]);
     }
 
     // Find the maximum element in error vector
-    cout << "\nMax Error Norm = " << *max_element(error.begin(), error.end()) << "\n";    
-    
+    cout << "\nMax Error Norm = " << *max_element(errordResult.begin(), errordResult.end()) << "\n";    
 }
+

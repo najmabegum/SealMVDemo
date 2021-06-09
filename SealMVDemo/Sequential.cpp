@@ -146,7 +146,7 @@ void Sequential(int dimension, bool rescale)
         ckks_encoder.encode(pod_matrix2_set2[i], scale, plain_matrix2_set2[i]);
         ckks_encoder.encode(all_diagonal1_set2[i], scale, plain_diagonal1_set2[i]);
         ckks_encoder.encode(all_diagonal2_set2[i], scale, plain_diagonal2_set2[i]);
-    }
+    }    
 
     cout << "Encoding Set 2 is Complete" << endl;
 
@@ -181,7 +181,7 @@ void Sequential(int dimension, bool rescale)
         }
         else
         {
-            /*Decrypt*/            
+            /*Decrypt*/
             Plaintext pt_result_current;
             decryptor.decrypt(cipher_matrix1_lt_Seq[x-1], pt_result_current);
 
@@ -200,13 +200,13 @@ void Sequential(int dimension, bool rescale)
             if (cipher_diagonal1_set2[0].coeff_modulus_size() > encodedCipherResult.coeff_modulus_size())
             {
                 for (unsigned int i = 0; i < dimension; i++)
-                {                    
+                {
                     evaluator.rescale_to_next_inplace(cipher_diagonal1_set2[i]);
                 }
             }
             cipher_matrix1_lt_Seq[x] = Linear_Transform_Cipher(encodedCipherResult, cipher_diagonal1_set2, gal_keys, params, rescale);
-        }              
-    }   
+        }
+    }             
     auto stop_comp2_set2 = chrono::high_resolution_clock::now();
 
     auto duration_comp2_set2 = chrono::duration_cast<chrono::microseconds>(stop_comp2_set2 - start_comp2_set2);
@@ -227,7 +227,24 @@ void Sequential(int dimension, bool rescale)
 
      vector<double> expectedvector2 = get_Linear_Transformation_expected_sequentialVector(dimension, pod_matrix1_set2);
      print_partial_vector(expectedvector2, dimension);
-     get_max_error_norm(output_result2_set2, expectedvector2, dimension);
+     /*get_max_error_norm_largeValues(output_result2_set2, expectedvector2, dimension);*/
+
+
+    /*Decrypt*/
+    
+    //Plaintext pt_result2_set2;
+    //decryptor.decrypt(finalresult, pt_result2_set2);
+
+    //// Decode
+    //vector<double> output_result2_set2;
+    //ckks_encoder.decode(pt_result2_set2, output_result2_set2);
+
+    //cout << "Linear Transformation Set 2 Result:" << endl;
+    //print_partial_vector(output_result2_set2, dimension);
+
+    //vector<double> expectedvector2 = get_Linear_Transformation_expected_sequentialVector(dimension, pod_matrix1_set2);
+    //print_partial_vector(expectedvector2, dimension);
+    //get_max_error_norm(output_result2_set2, expectedvector2, dimension);
 
     outf.close();
 }

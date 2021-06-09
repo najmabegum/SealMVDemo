@@ -21,6 +21,8 @@ int main()
         cout << "| 4. Matriv Vector Multiplication - Sparse (Without rescale)                       |" << endl;
         cout << "| 5. Sequential Cipher Matriv Vector Multiplication - Dense (With rescale)         |" << endl;
         cout << "| 6. Sequential Cipher Matriv Vector Multiplication - Dense (Without rescale)      |" << endl;
+        cout << "| 7. Matriv Vector Multiplication - Dense 1 matrix (With rescale)                           |" << endl;
+        cout << "| 8. Matriv Vector Multiplication - Dense 1 matrix (Without rescale)                           |" << endl;
         cout << "+----------------------------+----------------------------+" << endl;
        
         size_t megabytes = MemoryManager::GetPool().alloc_byte_count() >> 20;
@@ -76,6 +78,14 @@ int main()
 
         case 6:
             Sequential(10,false);
+            break;
+
+        case 7:
+            MVDenseMatrix(10, true);
+            break;
+
+        case 8:
+            MVDenseMatrix(10, false);
             break;
 
         case 0:
