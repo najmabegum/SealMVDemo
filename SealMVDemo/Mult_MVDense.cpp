@@ -9,8 +9,7 @@
 using namespace std;
 using namespace seal;
 
-
-void MVMultiplicationDense(int dimension, bool rescale)
+void Mult_MVDense(int dimension, bool rescale)
 {
 	/*Setting up Seal Context*/
 	size_t poly_modulus_degree = 8192;
@@ -25,7 +24,7 @@ void MVMultiplicationDense(int dimension, bool rescale)
 	PublicKey pk;
 	keygen.create_public_key(pk);
 	GaloisKeys gal_keys;
-	keygen.create_galois_keys(gal_keys);	
+	keygen.create_galois_keys(gal_keys);
 
 	RelinKeys relin_keys;
 	keygen.create_relin_keys(relin_keys);
@@ -94,6 +93,13 @@ void MVMultiplicationDense(int dimension, bool rescale)
 	// Close script
 	outscript.close();
 
+	// --------------- Create vectors to hold normalised error values------------------
+	
+	int numberOfObs = dimension * dimension;
+	vector<double> error_result(dimension);
+	vector<double> error_maxNormalised_result(dimension);
+	vector<double> error_mse_result(dimension);
+
 	// --------------- MATRIX SET ------------------
 
 	cout << "Dimension of Matrix : " << dimension << endl
@@ -104,19 +110,40 @@ void MVMultiplicationDense(int dimension, bool rescale)
 
 	// Fill input matrices
 	double filler = 1.0;
+	int maxMatrixEntry = numberOfObs / 2;
+	bool isMaxReached = false;
+	bool isReverseMaxEntryRepeat = false;
+	cout << "Matrix Maximum entry: " << maxMatrixEntry << endl
+		<< endl;
 
 	// Set 1
-	for (int i = 0; i < dimension; i++)
+	for(int i = 0; i < dimension; i++)
 	{
 		for (int j = 0; j < dimension; j++)
 		{
+			isReverseMaxEntryRepeat = false;
 			pod_matrix1_set2[i][j] = filler;
 			pod_matrix2_set2[i][j] = static_cast<double>((j % 2) + 1);
-			filler++;
+			if (filler == maxMatrixEntry)
+			{
+				isMaxReached = true;				
+				isReverseMaxEntryRepeat = true;
+			}			
+			if (isMaxReached)
+			{
+				filler--;
+			}
+			else
+			{
+				filler++;
+			}
 		}
 	}
+
 	print_partial_matrix(pod_matrix1_set2);
-	print_partial_matrix(pod_matrix2_set2);	
+	print_partial_matrix(pod_matrix2_set2);
+
+	
 
 	// Get all diagonals        
 	vector<vector<double>> all_diagonal1_set2(dimension, vector<double>(dimension));
@@ -187,125 +214,14 @@ void MVMultiplicationDense(int dimension, bool rescale)
 	{
 		ckks_encoder.decode(plain_diagonal1_set2[i], all_diagonal1_set2[i]);
 		ckks_encoder.decode(plain_diagonal2_set2[i], all_diagonal2_set2[i]);
-	}
-	// test print output
-	/*cout << "Diagonal Set 2" << endl;
-	cout << "\nDiagonal Set 2 Result:" << endl;
-	for (unsigned int i = 0; i < dimension; i++)
-	{
-		cout << "\t[";
-		for (unsigned int j = 0; j < dimension-1; j++)
-		{
-			cout << all_diagonal1_set2[i][j] << ", ";
-		}
-		cout << all_diagonal1_set2[i][dimension-1];
-		cout << "]" << endl;
-	}
-	cout << "\n"
-		<< endl;*/
-
-
-		// Test LinearTransform here    
-
-			///*UNCOMMENT TO DEBUG LINEAR TRANSFORM FUNCTION*/
-			//// Fill ct
-			//Ciphertext ct_rotated;
-			//evaluator.rotate_vector(cipher_matrix1_set2[0], dimension, gal_keys, ct_rotated);
-			//Ciphertext ct;
-			//evaluator.add(cipher_matrix1_set2[0], ct_rotated, ct);
-			//// Add epsilon to avoid negative numbers
-			//vector<double> epsilon_vec(poly_modulus_degree / 2);
-			//for (int i = 0; i < epsilon_vec.size(); i++)
-			//{
-			//    epsilon_vec[i] = 0.0000;
-			//}
-			//Plaintext epsilon_plain;
-			//ckks_encoder.encode(epsilon_vec, scale, epsilon_plain);
-			//evaluator.add_plain_inplace(ct, epsilon_plain);
-			//// test fill ct
-			//Plaintext test_fill;
-			//decryptor.decrypt(ct, test_fill);
-			//vector<double> out_fill;
-			//ckks_encoder.decode(test_fill, out_fill);
-			//cout << "Filled CT:\n"
-			//    << endl;
-			//for (int i = 0; i < dimension; i++)
-			//{
-			//    cout << out_fill[i] << ", ";
-			//}
-			//cout << "\n"
-			//    << endl;
-			//Ciphertext ct_prime;
-			//// ct` = CMult(ct, u0)
-			//evaluator.multiply_plain(ct, plain_diagonal1_set2[0], ct_prime);
-			//// test mult plain 0
-			//Plaintext test_0;
-			//decryptor.decrypt(ct_prime, test_0);
-			//vector<double> out_test_0;
-			//ckks_encoder.decode(test_0, out_test_0);
-			//cout << "CT_Prime 0 :\n"
-			//    << endl;
-			//for (int i = 0; i < dimension; i++)
-			//{
-			//    cout << out_test_0[i] << ", ";
-			//}
-			//cout << "\n"
-			//    << endl;
-			//for (int l = 1; l < dimension; l++)
-			//{
-			//    // ct` = Add(ct`, CMult(Rot(ct, l), ul))
-			//    Ciphertext temp_rot;
-			//    Ciphertext temp_mul;
-			//    evaluator.rotate_vector(ct, l, gal_keys, temp_rot);
-			//    evaluator.multiply_plain(temp_rot, plain_diagonal1_set2[l], temp_mul);
-			//    evaluator.add_inplace(ct_prime, temp_mul);
-			//    // test decrypt
-			//    Plaintext temp_rot_plain;
-			//    Plaintext temp_mul_plain;
-			//    Plaintext temp_ct_prime;
-			//    decryptor.decrypt(temp_rot, temp_rot_plain);
-			//    decryptor.decrypt(temp_mul, temp_mul_plain);
-			//    decryptor.decrypt(ct_prime, temp_ct_prime);
-			//    // test decode
-			//    vector<double> test_out_rot, test_out_mul, test_ct_prime;
-			//    vector<double> test_diag;
-			//    ckks_encoder.decode(temp_ct_prime, test_ct_prime);
-			//    ckks_encoder.decode(temp_mul_plain, test_out_mul);
-			//    ckks_encoder.decode(temp_rot_plain, test_out_rot);
-			//    ckks_encoder.decode(plain_diagonal1_set2[l], test_diag);
-			//    cout << "Rotation " << l << "\n"
-			//        << endl;
-			//    cout << "\nrotated vec:\n\t[";
-			//    for (int j = 0; j < dimension; j++)
-			//    {
-			//        cout << test_out_rot[j] << ", ";
-			//    }
-			//    cout << "\nDiagonal vec:\n\t[";
-			//    for (int j = 0; j < dimension; j++)
-			//    {
-			//        cout << test_diag[j] << ", ";
-			//    }
-			//    cout << "\nMult vec vec:\n\t[";
-			//    for (int j = 0; j < dimension; j++)
-			//    {
-			//        cout << test_out_mul[j] << ", ";
-			//    }
-			//    cout << "\nCt_prime vec:\n\t[";
-			//    for (int j = 0; j < dimension; j++)
-			//    {
-			//        cout << test_ct_prime[j] << ", ";
-			//    }
-			//    cout << "\n"
-			//        << endl;
-			//}
-
+	}	
 
 	/*Perform Linear Transform on Plain*/
 
 	auto start_comp1_set2 = chrono::high_resolution_clock::now();
-	Ciphertext ct_prime_set2 = Linear_Transform_Plain(cipher_matrix1_set2[0], plain_diagonal1_set2, gal_keys, params,rescale);
+	Ciphertext ct_prime_set2 = Linear_Transform_Plain(cipher_matrix1_set2[0], plain_diagonal1_set2, gal_keys, params, rescale);
 	auto stop_comp1_set2 = chrono::high_resolution_clock::now();
-	
+
 	// Decrypt
 	Plaintext pt_result_set2;
 	decryptor.decrypt(ct_prime_set2, pt_result_set2);
@@ -323,24 +239,24 @@ void MVMultiplicationDense(int dimension, bool rescale)
 
 	// Check result
 	cout << "Expected output Set 2: " << endl;
-
 	test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-
 	vector<double> expectedvector1 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-	vector<double> errornorm1result(dimension);	
-	get_max_error_norm(output_result_set2, expectedvector1, dimension, errornorm1result);
-
+			
+	// Calculate Error Norms
+	error_maxNormalised_result[0] = get_max_error_norm_normalised(maxMatrixEntry,output_result_set2, expectedvector1, dimension, error_result);		
+	double mseSummationValue1 = get_mse(output_result_set2, expectedvector1, dimension, error_result);
+	error_mse_result[0] = mseSummationValue1 / (dimension * dimension);
 	// ------------- SECOND COMPUTATION ----------------
 	outf << "# index 1" << endl;
 	outf << "# C_Vec . C_Mat" << endl;
-	
-	
+
+
 	/*Perform Linear Transform on Cipher*/
 
 	auto start_comp2_set2 = chrono::high_resolution_clock::now();
 	Ciphertext ct_prime2_set2 = Linear_Transform_Cipher(cipher_matrix1_set2[0], cipher_diagonal1_set2, gal_keys, params, rescale, relin_keys);
 	auto stop_comp2_set2 = chrono::high_resolution_clock::now();
-	
+
 	// Decrypt
 	Plaintext pt_result2_set2;
 	decryptor.decrypt(ct_prime2_set2, pt_result2_set2);
@@ -361,8 +277,20 @@ void MVMultiplicationDense(int dimension, bool rescale)
 
 	test_Linear_Transformation(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
 	vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, pod_matrix1_set2, pod_matrix1_set2[0]);
-	vector<double> errornorm2result(dimension);
-	get_max_error_norm(output_result2_set2, expectedvector2, dimension, errornorm2result);
-	
+		
+	// Calculate Error Norms
+	error_maxNormalised_result[1] = get_max_error_norm_normalised(maxMatrixEntry,output_result2_set2, expectedvector2, dimension, error_result);
+	double mseSummationValue2 =  get_mse(output_result2_set2, expectedvector2, dimension, error_result);
+	error_mse_result[1] = mseSummationValue1 / (dimension * dimension);
+
+	/*Print Error Norms*/
+	cout << "Max Normalised Error:" << endl;
+	cout << "C_Vec . P_Mat:" << error_maxNormalised_result[0] << endl;
+	cout << "C_Vec . C_Mat:" << error_maxNormalised_result[1] << endl;
+
+	cout << "MSE Norm:" << endl;
+	cout << "C_Vec . P_Mat:" << error_mse_result[0] << endl;
+	cout << "C_Vec . C_Mat:" << error_mse_result[1] << endl;
+
 	outf.close();
 }

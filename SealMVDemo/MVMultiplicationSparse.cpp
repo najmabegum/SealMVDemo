@@ -27,6 +27,9 @@ void MVMultiplicationSparse(int dimension, int diagonalStart, int diagonalEnd, b
     GaloisKeys gal_keys;
     keygen.create_galois_keys(gal_keys);
 
+    RelinKeys relin_keys;
+    keygen.create_relin_keys(relin_keys);
+
     Encryptor encryptor(context, pk);
     Evaluator evaluator(context);
     Decryptor decryptor(context, sk);
@@ -354,7 +357,7 @@ void MVMultiplicationSparse(int dimension, int diagonalStart, int diagonalEnd, b
 
     // Linear Transform on Cipher
     auto start_comp2_set2 = chrono::high_resolution_clock::now();
-    Ciphertext ct_prime2_set2 = Linear_Transform_Cipher(cipher_matrix1_set2[0], cipher_diagonal1_set2, gal_keys, params, rescale);
+    Ciphertext ct_prime2_set2 = Linear_Transform_Cipher(cipher_matrix1_set2[0], cipher_diagonal1_set2, gal_keys, params, rescale, relin_keys);
     auto stop_comp2_set2 = chrono::high_resolution_clock::now();
 
     // Decrypt
