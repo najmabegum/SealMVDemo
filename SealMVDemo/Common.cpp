@@ -55,8 +55,7 @@ int main()
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
         } while (!valid);
-        /*vector<int> dimensionValues = { 10,100,200,300,400,500,600,700,800,900,1000 };*/
-        vector<int> dimensionValues = { 10,100,200 };
+        vector<int> dimensionValues = { 10,100,200,300,400,500,600,700,800,900,1000 };        
         switch (selection)
         {
         case 1:
