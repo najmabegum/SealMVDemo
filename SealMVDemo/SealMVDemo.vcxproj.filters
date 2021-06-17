@@ -33,6 +33,9 @@
     <ClCompile Include="Mult_MVDense.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SequentialMV.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

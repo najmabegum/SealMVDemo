@@ -52,7 +52,7 @@ int main()
             {
                 cout << "  [Beep~~] valid option: type 0 ~ 10" << endl;
                 cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                //cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
         } while (!valid);
         vector<int> dimensionValues = { 10,100,200,300,400,500,600,700,800,900,1000 };        
@@ -82,7 +82,8 @@ int main()
             /*encrypted_result_1 = matrix * vector
             encrypted_result_2 = matrix * encrypted_result_1
             encrypted_result_3 = matrix * encrypted_result_2*/
-            Sequential(7,true);
+            /*Sequential(7,true);*/
+            SequentialMV(7, 300,true);
             break;        
 
         case 6:

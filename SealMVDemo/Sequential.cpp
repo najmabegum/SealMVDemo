@@ -16,7 +16,7 @@ void Sequential(int dimension, bool rescale)
     EncryptionParameters params(scheme_type::ckks);
     params.set_poly_modulus_degree(poly_modulus_degree);
     cout << "MAX BIT COUNT: " << CoeffModulus::MaxBitCount(poly_modulus_degree) << endl;    
-    params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 40, 40, 40, 40, 40, 60 }));
+    params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 20,40, 40, 40, 40, 40, 40, 40, 60 }));
     /*params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 40, 60 }));*/
     auto context = SEALContext::SEALContext(params);
 
