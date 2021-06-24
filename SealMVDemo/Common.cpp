@@ -15,16 +15,16 @@ int main()
         cout << "+---------------------------------------------------------+" << endl;
         cout << "| Examples                   |" << endl;
         cout << "+----------------------------+---------------------------------------------------------------------------------+" << endl;
-        cout << "| 1.  Matriv Vector Multiplication - Dense (With rescale)                                                      |" << endl;
-        cout << "| 2.  Matriv Vector Multiplication - Dense (Without rescale)                                                   |" << endl;
-        cout << "| 3.  Matriv Vector Multiplication - Sparse (With rescale)                                                     |" << endl;
-        cout << "| 4.  Matriv Vector Multiplication - Sparse (Without rescale)                                                  |" << endl;
-        cout << "| 5.  Sequential Cipher Matriv Vector Multiplication - Dense (With rescale)                                    |" << endl;
-        cout << "| 6.  Sequential Cipher Matriv Vector Multiplication - Dense (Without rescale)                                 |" << endl;
-        cout << "| 7.  Matriv Vector Multiplication - Dense 1 matrix (Max Normalised and MSE) (With rescale)                    |" << endl;
-        cout << "| 8.  Matriv Vector Multiplication - Dense 1 matrix (Max Normalised and MSE) (Without rescale)                 |" << endl;
-        cout << "| 9.  Matriv Vector Multiplication - Dense (Max Normalised and MSE) (With rescale)                             |" << endl;
-        cout << "| 10. Matriv Vector Multiplication - Dense (Max Normalised and MSE) (Without rescale)                          |" << endl;
+        cout << "| 1.  Matrix Vector Multiplication - Dense (With rescale)                                                      |" << endl;
+        cout << "| 2.  Matrix Vector Multiplication - Dense (Without rescale)                                                   |" << endl;
+        cout << "| 3.  Matrix Vector Multiplication - Sparse (With rescale)                                                     |" << endl;
+        cout << "| 4.  Matrix Vector Multiplication - Sparse (Without rescale)                                                  |" << endl;
+        cout << "| 5.  Sequential Cipher Matrix Vector Multiplication - Dense (With rescale)                                    |" << endl;
+        cout << "| 6.  Sequential Cipher Matrix Vector Multiplication - Dense (Without rescale)                                 |" << endl;
+        cout << "| 7.  Matrix Vector Multiplication - Dense 1 matrix (Max Normalised and MSE) (With rescale)                    |" << endl;
+        cout << "| 8.  Matrix Vector Multiplication - Dense 1 matrix (Max Normalised and MSE) (Without rescale)                 |" << endl;
+        cout << "| 9.  Matrix Vector Multiplication - Dense (Max Normalised and MSE) (With rescale)                             |" << endl;
+        cout << "| 10. Matrix Vector Multiplication - Dense (Max Normalised and MSE) (Without rescale)                          |" << endl;
         cout << "+----------------------------+---------------------------------------------------------------------------------+" << endl;
        
         size_t megabytes = MemoryManager::GetPool().alloc_byte_count() >> 20;
@@ -83,7 +83,7 @@ int main()
             encrypted_result_2 = matrix * encrypted_result_1
             encrypted_result_3 = matrix * encrypted_result_2*/
             /*Sequential(7,true);*/
-            SequentialMV(7, 300,true);
+            SequentialMV(10, 300,true);
             break;        
 
         case 6:

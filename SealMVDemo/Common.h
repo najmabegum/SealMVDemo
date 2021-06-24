@@ -569,100 +569,107 @@ inline Ciphertext Linear_Transform_Cipher_Sequential_2(Ciphertext ct, vector<Cip
     return cipher_result_prime[size - 1];
 }
 
-inline Ciphertext Linear_Transform_Cipher_Sequential_Dense(Ciphertext ct, vector<Ciphertext> U_diagonals, GaloisKeys gal_keys, EncryptionParameters params,
-    bool rescale, SecretKey sk, RelinKeys relin_keys, int iteration)
+inline Ciphertext Linear_Transform_Cipher_Sequential_Dense(Ciphertext encrypted_vector, vector<Ciphertext> encrypted_diagonals, GaloisKeys gal_keys, EncryptionParameters params,
+    bool rescale, SecretKey sk, RelinKeys relin_keys, int iterations, SEALContext context)
 {
-    cout << "    + Invoked Linear_Transform_Cipher C_vec . C_mat:" << endl;
-    auto context = SEALContext::SEALContext(params);
+    cout << "    + Invoked Sequential Vector Matrix multiplication " << endl;
+
     Evaluator evaluator(context);
     Decryptor decryptor(context, sk);    
     CKKSEncoder ckks_encoder(context);
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));    
 
-    int size = U_diagonals.size();
-    vector<Ciphertext> cipher_result_prime(size);
-    for (int i = 0;i < iteration;i++)
+    int nr_of_diagonals = encrypted_diagonals.size();
+
+    vector<Ciphertext> encrypted_results(nr_of_diagonals);
+
+    for (int i = 0; i < iterations ; i++)
     {
         cout << "\nIteration: " << i << endl;
 
         /*Initialization*/
         auto start = chrono::high_resolution_clock::now();        
-        Ciphertext ct_rot;
-        Ciphertext ct_new;
+        Ciphertext rotated_vector;
+        Ciphertext new_vector;
 
         /*Rotate and Add*/
         if (i == 0)
         {
-            evaluator.rotate_vector(ct, -size, gal_keys, ct_rot);
-            evaluator.add(ct, ct_rot, ct_new);
+            evaluator.rotate_vector(encrypted_vector, -nr_of_diagonals, gal_keys, rotated_vector);
+            evaluator.add(encrypted_vector, rotated_vector, new_vector);
         }
         else
         {
-            evaluator.rotate_vector(cipher_result_prime[i - 1], -size, gal_keys, ct_rot);
-            evaluator.add(cipher_result_prime[i - 1], ct_rot, ct_new);
+            evaluator.rotate_vector(encrypted_results[i - 1], -nr_of_diagonals, gal_keys, rotated_vector);
+            evaluator.add(encrypted_results[i - 1], rotated_vector, new_vector);
         }
 
-        cout << "\n    + Scale on add - input vector: " << log2(ct_new.scale()) << " bits" << endl;
-        cout << "\n    + Scale on add - input matrix: " << log2(U_diagonals[0].scale()) << " bits" << endl;
+        cout << "\n    + Scale on add - input vector: " << log2(new_vector.scale()) << " bits" << endl;
+        cout << "\n    + Scale on add - input matrix: " << log2(encrypted_diagonals[0].scale()) << " bits" << endl;
 
         /*Mod inplace on input matrix*/
-        int ctNewCoeff = ct_new.coeff_modulus_size();
-        int inputMatrixCoeff = U_diagonals[0].coeff_modulus_size();
+        int ctNewCoeff = new_vector.coeff_modulus_size();
+        int inputMatrixCoeff = encrypted_diagonals[0].coeff_modulus_size();
         int differenceInCoeff = inputMatrixCoeff - ctNewCoeff;
+
         for (int p = 0; p < differenceInCoeff;p++)
         {
             cout << "    Mod switch to next inplace on InputMatrix : " << p << endl;
-            for (int r = 0; r < size; r++)
+            for (int r = 0; r < nr_of_diagonals; r++)
             {
-                evaluator.mod_switch_to_next_inplace(U_diagonals[r]);
+                evaluator.mod_switch_to_next_inplace(encrypted_diagonals[r]);
             }
         }
 
         /*Multiply with all rows*/
-        vector<Ciphertext> ct_result(size);
-        evaluator.multiply(ct_new, U_diagonals[0], ct_result[0]);
+        vector<Ciphertext> ct_result(nr_of_diagonals);
+
+        evaluator.multiply(new_vector, encrypted_diagonals[0], ct_result[0]);
+
         cout << "\n    + Scale on multiply - input vector : " << log2(ct_result[0].scale()) << " bits" << endl;
-        cout << "\n  + Scale on multiply - input matrix: " << log2(U_diagonals[0].scale()) << " bits" << endl;        
-        for (int l = 1; l < size; l++)
+        cout << "\n  + Scale on multiply - input matrix: " << log2(encrypted_diagonals[0].scale()) << " bits" << endl;        
+        for (int l = 1; l < nr_of_diagonals; l++)
         {
             Ciphertext temp_rot;
-            evaluator.rotate_vector(ct_new, l, gal_keys, temp_rot);
-            evaluator.multiply(temp_rot, U_diagonals[l], ct_result[l]);
+            evaluator.rotate_vector(new_vector, l, gal_keys, temp_rot);
+            evaluator.multiply(temp_rot, encrypted_diagonals[l], ct_result[l]);
         }
         
         /*Add many, relin, rescale*/
-        evaluator.add_many(ct_result, cipher_result_prime[i]);       
-        cout << "\n    + Scale on add_many - input vector - before relin: " << log2(cipher_result_prime[i].scale()) << " bits" << endl;
-        evaluator.relinearize_inplace(cipher_result_prime[i], relin_keys);
-        cout << "\n    + Scale on add_many - input vector - after relin: " << log2(cipher_result_prime[i].scale()) << " bits" << endl;
+        evaluator.add_many(ct_result, encrypted_results[i]);       
+        cout << "\n    + Scale on add_many - input vector - before relin: " << log2(encrypted_results[i].scale()) << " bits" << endl;
+        evaluator.relinearize_inplace(encrypted_results[i], relin_keys);
+        cout << "\n    + Scale on add_many - input vector - after relin: " << log2(encrypted_results[i].scale()) << " bits" << endl;
         if (rescale)
         {
-            cout << "\n    + Scale on add_many - input vector - before rescale: " << log2(cipher_result_prime[i].scale()) << " bits" << endl;
-            evaluator.rescale_to_next_inplace(cipher_result_prime[i]);
-            cout << "\n    + Scale on add_many - input vector - after rescale: " << log2(cipher_result_prime[i].scale()) << " bits" << endl;
+            cout << "\n    + Scale on add_many - input vector - before rescale: " << log2(encrypted_results[i].scale()) << " bits" << endl;
+            evaluator.rescale_to_next_inplace(encrypted_results[i]);
+            cout << "\n    + Scale on add_many - input vector - after rescale: " << log2(encrypted_results[i].scale()) << " bits" << endl;
         }
+
         auto stop = chrono::high_resolution_clock::now();
 
         /*Print time*/
         auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
-        cout << "\nTime to compute Iteration: " << i << duration.count() << " microseconds" << endl;
+        cout << "\nTime to compute Iteration: " << i << duration.count() / 1000000 << " Seconds" << endl;
         
         
         cout << "\nVirtual Memory to compute Iteration: " << i + 1 << pmc.PrivateUsage << endl;
         cout << "\nPhysical Memory (RAM) to compute Iteration: " << i + 1 << pmc.WorkingSetSize << endl;        
 
+
         /*Test with decrypt - to be removed*/
-        Plaintext pt_result_current;
-        decryptor.decrypt(cipher_result_prime[i], pt_result_current);        
-        vector<double> output_result_plain;
-        ckks_encoder.decode(pt_result_current, output_result_plain);
-        cout << "\nLinear Transformation Set 2 Result:" << endl;        
-        for (unsigned int row = 0; row < size; row++)
-        {
-            cout << output_result_plain[row] << ", ";
-        }
+        //Plaintext pt_result_current;
+        //decryptor.decrypt(encrypted_results[i], pt_result_current);        
+        //vector<double> output_result_plain;
+        //ckks_encoder.decode(pt_result_current, output_result_plain);
+        //cout << "\nLinear Transformation Set 2 Result:" << endl;        
+        //for (unsigned int row = 0; row < nr_of_diagonals; row++)
+        //{
+        //    cout << output_result_plain[row] << ", ";
+        //}
     }
   
-    return cipher_result_prime[size - 1];
+    return encrypted_results[nr_of_diagonals - 1];
 }
