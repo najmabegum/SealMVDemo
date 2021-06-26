@@ -189,9 +189,9 @@ inline vector<T> get_diagonal(int position, vector<vector<T>> U)
     return diagonal;
 }
 
-inline Ciphertext Linear_Transform_Plain(Ciphertext ct, vector<Plaintext> U_diagonals, GaloisKeys gal_keys, EncryptionParameters params, bool rescale)
+inline Ciphertext Linear_Transform_Plain(Ciphertext encrypted_vector, vector<Plaintext> plain_diagonals, GaloisKeys gal_keys, EncryptionParameters params, bool rescale)
 {
-    cout << "    + Invoked Linear_Transform_Plain to compute C_vec . P_mat" << endl;
+    cout << "    + Invoked Linear_Transform_Plain to compute Encrypted Vector . Plain Matrix (Diagonals)" << endl;
 
     auto context = SEALContext::SEALContext(params);
     Evaluator evaluator(context);
@@ -199,19 +199,19 @@ inline Ciphertext Linear_Transform_Plain(Ciphertext ct, vector<Plaintext> U_diag
     // Fill ct with duplicate
     Ciphertext ct_rot;
 
-    evaluator.rotate_vector(ct, -U_diagonals.size(), gal_keys, ct_rot);
+    evaluator.rotate_vector(encrypted_vector, -plain_diagonals.size(), gal_keys, ct_rot);
     Ciphertext ct_new;
-    evaluator.add(ct, ct_rot, ct_new);
+    evaluator.add(encrypted_vector, ct_rot, ct_new);
     cout << "    + Scale Linear_Transform_Plain add: " << log2(ct_new.scale()) << " bits" << endl;
 
-    vector<Ciphertext> ct_result(U_diagonals.size());
-    evaluator.multiply_plain(ct_new, U_diagonals[0], ct_result[0]);
+    vector<Ciphertext> ct_result(plain_diagonals.size());
+    evaluator.multiply_plain(ct_new, plain_diagonals[0], ct_result[0]);
 
-    for (int l = 1; l < U_diagonals.size(); l++)
+    for (int l = 1; l < plain_diagonals.size(); l++)
     {
         Ciphertext temp_rot;
         evaluator.rotate_vector(ct_new, l, gal_keys, temp_rot);
-        evaluator.multiply_plain(temp_rot, U_diagonals[l], ct_result[l]);
+        evaluator.multiply_plain(temp_rot, plain_diagonals[l], ct_result[l]);
     }
 
     Ciphertext ct_prime;
@@ -226,39 +226,39 @@ inline Ciphertext Linear_Transform_Plain(Ciphertext ct, vector<Plaintext> U_diag
     return ct_prime;
 }
 
-inline Ciphertext Linear_Transform_Cipher(Ciphertext ct, vector<Ciphertext> U_diagonals, GaloisKeys gal_keys, EncryptionParameters params, bool rescale, RelinKeys relinKeys)
+inline Ciphertext Linear_Transform_Cipher(Ciphertext encrypted_vector, vector<Ciphertext> encrypted_diagonals, GaloisKeys gal_keys, EncryptionParameters params, bool rescale, RelinKeys relinKeys)
 {
-    cout << "    + Invoked Linear_Transform_Cipher C_vec . C_mat:" << endl;
+    cout << "    + Invoked Linear_Transform_Cipher Encrypted Vector . Encrypted Matrix (diagonals):" << endl;
     auto context = SEALContext::SEALContext(params);
     Evaluator evaluator(context);
 
     // Fill ct with duplicate
-    Ciphertext ct_rot;
+    Ciphertext rotated_encrypted_vector;
 
-    evaluator.rotate_vector(ct, -U_diagonals.size(), gal_keys, ct_rot);    
-    Ciphertext ct_new;
-    evaluator.add(ct, ct_rot, ct_new);
+    evaluator.rotate_vector(encrypted_vector, -encrypted_diagonals.size(), gal_keys, rotated_encrypted_vector);    
+    Ciphertext new_encrypted_vector;
+    evaluator.add(encrypted_vector, rotated_encrypted_vector, new_encrypted_vector);
 
-    cout << "    + Scale add: " << log2(ct_new.scale()) << " bits" << endl;
+    cout << "    + Scale add: " << log2(new_encrypted_vector.scale()) << " bits" << endl;
 
-    vector<Ciphertext> ct_result(U_diagonals.size());
-    evaluator.multiply(ct_new, U_diagonals[0], ct_result[0]);       
+    vector<Ciphertext> encrypted_results(encrypted_diagonals.size());
+    evaluator.multiply(new_encrypted_vector, encrypted_diagonals[0], encrypted_results[0]);       
 
     // Added relin
     if (rescale)
     {
-        evaluator.relinearize_inplace(ct_result[0], relinKeys);
+        evaluator.relinearize_inplace(encrypted_results[0], relinKeys);
     }
     
-    for (int l = 1; l < U_diagonals.size(); l++)
+    for (int l = 1; l < encrypted_diagonals.size(); l++)
     {
         Ciphertext temp_rot;
-        evaluator.rotate_vector(ct_new, l, gal_keys, temp_rot);
-        evaluator.multiply(temp_rot, U_diagonals[l], ct_result[l]);              
+        evaluator.rotate_vector(new_encrypted_vector, l, gal_keys, temp_rot);
+        evaluator.multiply(temp_rot, encrypted_diagonals[l], encrypted_results[l]);              
     } 
     
     Ciphertext ct_prime;
-    evaluator.add_many(ct_result, ct_prime);
+    evaluator.add_many(encrypted_results, ct_prime);
     if (rescale )/*log2(ct_prime.scale()) > 40*/
     {       
         // Added relin
@@ -569,8 +569,8 @@ inline Ciphertext Linear_Transform_Cipher_Sequential_2(Ciphertext ct, vector<Cip
     return cipher_result_prime[size - 1];
 }
 
-inline Ciphertext Linear_Transform_Cipher_Sequential_Dense(Ciphertext encrypted_vector, vector<Ciphertext> encrypted_diagonals, GaloisKeys gal_keys, EncryptionParameters params,
-    bool rescale, SecretKey sk, RelinKeys relin_keys, int iterations, SEALContext context)
+inline Ciphertext Linear_Transform_Cipher_Sequential_Dense(const Ciphertext &encrypted_vector, vector<Ciphertext> &encrypted_diagonals, const GaloisKeys &gal_keys, const EncryptionParameters &params,
+    bool rescale, const SecretKey &sk, const RelinKeys &relin_keys, int iterations, const SEALContext &context)
 {
     cout << "    + Invoked Sequential Vector Matrix multiplication " << endl;
 
