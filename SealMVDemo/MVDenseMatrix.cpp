@@ -127,7 +127,6 @@ void MVDenseMatrix(int dimension, bool rescale)
 	ckks_encoder.decode(encoded_results, plain_results);
 
 	auto duration_comp2_set2 = chrono::duration_cast<chrono::microseconds>(stop_comp2_set2 - start_comp2_set2);
-	cout << "\nTime to compute C_vec . C_mat: " << duration_comp2_set2.count() << " microseconds" << endl;
 
 	cout << "HE Result:" << endl;
 	print_partial_vector(plain_results, dimension);
@@ -137,6 +136,10 @@ void MVDenseMatrix(int dimension, bool rescale)
 	test_Linear_Transformation(dimension, plain_matrix, plain_matrix[0]);
 
 	vector<double> expectedvector2 = get_Linear_Transformation_expected_vector(dimension, plain_matrix, plain_matrix[0]);
+
+	cout << "\nTime to compute C_vec . C_mat: " << endl << 
+		duration_comp2_set2.count() << " microseconds" << endl;
+
 	// Calculate Error Norms
 	error_maxNormalised_result[1] = get_max_error_norm_normalised(maxMatrixEntry, plain_results, expectedvector2, dimension, error_result);
 	double mseSummationValue2 = get_mse(plain_results, expectedvector2, dimension, error_result);
@@ -144,8 +147,10 @@ void MVDenseMatrix(int dimension, bool rescale)
 
 	/*Print Error Norms*/
 
-	cout << "Max Normalised Error: " << error_maxNormalised_result[1] << endl;
+	cout << "Max Normalised Error: " << endl <<
+		error_maxNormalised_result[1] << endl;
 	
-	cout << "MSE Norm: " << error_mse_result[1] << endl;
+	cout << "MSE Norm: " << endl <<
+		error_mse_result[1] << endl;
 
 }
