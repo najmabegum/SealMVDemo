@@ -98,7 +98,7 @@ void SequentialMV(int iterations, int dimension,bool rescale)
 
     cout << "Encoding and encrypting the vector..." << endl;
 
-    ckks_encoder.encode(plain_matrix[1], scale, encoded_vector);
+    ckks_encoder.encode(plain_matrix[0], scale, encoded_vector);
     encryptor.encrypt(encoded_vector, encrypted_vector);
 
     cout << "Encryption of the vector complete." << endl;
