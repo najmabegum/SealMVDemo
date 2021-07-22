@@ -160,11 +160,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Common.cpp" />
-    <ClCompile Include="Mult_MVDense.cpp" />
-    <ClCompile Include="MVDenseMatrix.cpp" />
-    <ClCompile Include="MVMultiplicationDense.cpp" />
-    <ClCompile Include="MVMultiplicationSparse.cpp" />
-    <ClCompile Include="Sequential.cpp" />
     <ClCompile Include="SequentialMV.cpp" />
   </ItemGroup>
   <ItemGroup>
