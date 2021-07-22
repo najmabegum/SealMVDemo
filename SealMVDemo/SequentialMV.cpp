@@ -18,8 +18,8 @@ void SequentialMV(int iterations, int dimension,bool rescale)
     params.set_poly_modulus_degree(poly_modulus_degree);
     cout << "MAX BIT COUNT: " << CoeffModulus::MaxBitCount(poly_modulus_degree) << endl;
     
-    /*params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 40, 60 }));*/
-    params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 20,40, 40, 40, 40, 40, 40, 40, 60 }));
+    /*params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 40, 40, 40, 60 }));*/   
+    params.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, { 60, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 60 }));
     auto context = SEALContext::SEALContext(params);
 
     KeyGenerator keygen(context);
@@ -41,7 +41,8 @@ void SequentialMV(int iterations, int dimension,bool rescale)
 
     // Create scale
     cout << "Coeff Modulus Back Value: " << params.coeff_modulus().back().value() << endl;
-    double scale = pow(2.0, 40);
+    double scaleBit = 30;
+    double scale = pow(2.0, 30);
 
     
   
@@ -138,7 +139,7 @@ void SequentialMV(int iterations, int dimension,bool rescale)
     auto start_of_sequential_ops = chrono::high_resolution_clock::now();    
 
     Ciphertext finalresult = Linear_Transform_Cipher_Sequential_Dense(encrypted_vector, encrypted_matrix_diagonals, gal_keys, params,
-        rescale, sk, relin_keys, iterations, context);
+        rescale, sk, relin_keys, iterations, context, scaleBit);
 
     auto end_of_sequential_ops = chrono::high_resolution_clock::now();
 

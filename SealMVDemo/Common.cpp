@@ -11,7 +11,7 @@ int main()
 
     cout << "Initiating the Sequential Procedure " << endl;
 
-    SequentialMV(7, 300, true);
+    SequentialMV(6, 100, true);
 
     return 0;
 }

@@ -570,7 +570,7 @@ inline Ciphertext Linear_Transform_Cipher_Sequential_2(Ciphertext ct, vector<Cip
 }
 
 inline Ciphertext Linear_Transform_Cipher_Sequential_Dense(const Ciphertext &encrypted_vector, vector<Ciphertext> &encrypted_diagonals, const GaloisKeys &gal_keys, const EncryptionParameters &params,
-    bool rescale, const SecretKey &sk, const RelinKeys &relin_keys, int iterations, const SEALContext &context)
+    bool rescale, const SecretKey &sk, const RelinKeys &relin_keys, int iterations, const SEALContext &context, double scaleBit)
 {
     cout << "    + Invoked Sequential Vector Matrix multiplication " << endl;
 
@@ -645,6 +645,7 @@ inline Ciphertext Linear_Transform_Cipher_Sequential_Dense(const Ciphertext &enc
         {
             cout << "\n    + Scale on add_many - input vector - before rescale: " << log2(encrypted_results[i].scale()) << " bits" << endl;
             evaluator.rescale_to_next_inplace(encrypted_results[i]);
+            encrypted_results[i].scale() = pow(2, scaleBit);
             cout << "\n    + Scale on add_many - input vector - after rescale: " << log2(encrypted_results[i].scale()) << " bits" << endl;
         }
 
